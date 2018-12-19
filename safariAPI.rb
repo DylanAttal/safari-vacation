@@ -26,14 +26,19 @@ get '/Animals' do
 end
 
 # Search for animal by species
-# Doesn't seem to work for me because the URL
-# throws everything into lowercase and my database
-# has animals with a capital first letter
 get '/Search' do
-  json animals: SeenAnimal.where(species: params["species"])
+  json animals: SeenAnimal.where('species ILIKE ?', "%#{params["species"]}%")
 end
 
 # Add an animal
+# e.g.
+# {
+#   "animals": {
+#     "species": "Duck",
+#     "count_of_times_seen": 10,
+#     "location_of_last_seen": "Pond"
+#   }
+# }
 post '/Animal' do
   data = JSON.parse(request.body.read)
   animal_params = data["animals"]
@@ -48,16 +53,12 @@ get '/Animal/:location' do
   json animals: SeenAnimal.where(location_of_last_seen: params["location"])
 end
 
-# Add one to count of last seen for specific animal
-# It doesn't increment automatically, you have to 
-# add one to the count_of_last_seen manually in the body
-# of the request as this is set up
-put '/Animal/:animal' do
-  data = JSON.parse(request.body.read)
-  animal_params = data["animals"]
-  animal = SeenAnimal.where(species: params["animal"])
-  animal.update(animal_params)
-  json animals: animal
+# Add one to count of last seen for specific animal by id
+put '/Animal/:id' do
+  found_animal = SeenAnimal.find(params["id"])
+  new_count = found_animal.count_of_times_seen + 1
+  found_animal.update(count_of_times_seen: new_count)
+  json animals: found_animal
 end
 
 # Delete a specific animal from the table by its id

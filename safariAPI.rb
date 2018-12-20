@@ -61,9 +61,9 @@ put '/Animal/:id' do
   json animals: found_animal
 end
 
-# Delete a specific animal from the table by its id
-delete '/Animal/:id' do
-  deleted_animal = SeenAnimal.find(params["id"])
+# Delete a specific animal from the table by its location
+delete '/Animal/:location' do
+  deleted_animal = SeenAnimal.where(location_of_last_seen: params["location"])
   deleted_animal.destroy
   json animals: deleted_animal
 end
